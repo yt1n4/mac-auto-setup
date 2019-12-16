@@ -90,7 +90,7 @@ disable r
 alias brew="env PATH=${PATH/\/usr\/local\/var\/pyenv\/shims:/} brew"
 
 
-. /Users/yt1na/.pyenv/versions/anaconda3-5.3.1/etc/profile.d/conda.sh
+. ~/.pyenv/versions/anaconda3-5.3.1/etc/profile.d/conda.sh
 # conda activate base
 
 
