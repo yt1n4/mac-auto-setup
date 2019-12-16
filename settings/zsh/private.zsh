@@ -1,40 +1,100 @@
-export PATH=/usr/local/bin:$PATH
-export PATH=/usr/local/sbin:$PATH
-export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+# zplug setting
+export ZPLUG_HOME=/usr/local/opt/zplug
+source $ZPLUG_HOME/init.zsh
+
 export LANG=ja_JP.UTF-8
-export PATH="$HOME/.rbenv/bin:$PATH"
+# gcc のパスの関係で順番を入れ替える
+export PATH=/usr/local/bin:$PATH
+export PATH=/usr/local:$PATH
+export PATH=$HOME/.nodebrew/current/bin:$PATH
+
+# git を homebrew で管理
+export PATH=/usr/local/git/bin:$PATH
+
+# プロンプト表示をカレントのみにする
+export PS1='%F{1}%m%f:%F{6}%c%f $ '
+
+# pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+# node
 export PATH="$HOME/.nodebrew/current/bin:$PATH"
-export PATH="$HOME/.yarn/bin:$PATH"
 
-setopt print_eight_bit
-source  ~/powerlevel9k/powerlevel9k.zsh-theme
-eval "$(rbenv init - zsh)"
-POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(time context dir vcs)
-POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status rbenv)
-POWERLEVEL9K_STATUS_VERBOSE=false
-POWERLEVEL9K_SHORTEN_STRATEGY="truncate_middle"
-POWERLEVEL9K_SHORTEN_DIR_LENGTH=3
+# color
+autoload -Uz colors
+colors
 
-alias swift='/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift'
+# compinit
+autoload -Uz compinit
+compinit
 
+setopt share_history
+setopt histignorealldups
 
-### latex compile functions ###
-texc (){
-    files=$(echo $@ | sed -e 's/\.tex//g');
-    for file in $files; do
-        platex "$file".tex;
-        echo "--------------------------------------\n"
-        dvipdfmx "$file".dvi > /dev/null;
-        ls $file* | grep -v -e '.tex' -e '.pdf' | xargs rm;
-    done
+HISTFILE=~/.zsh_history
+HISTIGNORE='?:??:???:exit'
+HISTSIZE=100000
+SAVEHIST=100000
 
-    echo "open viewer? [y/n]"
-    read resp
-    
-    if [ $(echo $resp | grep '[y|Y]' | wc -l) -ge 1 ]; then
-	    for file in $files; do
-	        command open ${file}.pdf;
-	    done
-    fi
-    echo "-------- compile END --------"
+# historyコマンドは履歴に登録しない
+setopt hist_no_store
+# 古いコマンドと同じものは無視 
+setopt hist_save_no_dups
+
+alias ltr='ls -ltr -G'
+alias lat='ls -lat -G'
+alias l='ls -ltr -G'
+alias la='ls -la -G'
+alias ll='ls -l -G'
+alias ls='ls -G'
+alias lr='ls -R'
+
+alias brew='PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin brew'
+
+zplug "wbinglee/zsh-wakatime"
+
+# syntax
+zplug "chrissicool/zsh-256color"
+zplug "Tarrasch/zsh-colors"
+zplug "zsh-users/zsh-syntax-highlighting"
+zplug "ascii-soup/zsh-url-highlighter"
+
+# program
+zplug "voronkovich/mysql.plugin.zsh"
+
+zplug load
+
+# 補完後、メニュー選択モードになり左右キーで移動が出来る
+zstyle ':completion:*:default' menu select=2
+function mkcd(){mkdir -p $1 && cd $1}
+
+function peco-history-selection() {
+    BUFFER=`history -n 1 | tail -r  | awk '!a[$0]++' | peco`
+    CURSOR=$#BUFFER
+    zle reset-prompt
 }
+
+zle -N peco-history-selection
+bindkey '^R' peco-history-selection
+
+# delete (not backspace)
+bindkey "^[[3~" delete-char
+bindkey "^[3;5~" delete-char
+
+# R lang を優先するため、r コマンドを無効にする
+disable r
+
+# brew 時に python config 回避
+alias brew="env PATH=${PATH/\/usr\/local\/var\/pyenv\/shims:/} brew"
+
+
+. /Users/yt1na/.pyenv/versions/anaconda3-5.3.1/etc/profile.d/conda.sh
+# conda activate base
+
+
+# file open alias 系
+alias coteditor='open $1 -a "/Applications/CotEditor.app"'
+
+
